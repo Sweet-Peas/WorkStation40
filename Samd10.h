@@ -40,6 +40,7 @@ protected:
 #endif
   int   writeRegister(uint32_t reg, uint32_t data);
   int   readRegister(uint32_t reg, uint32_t *result);
+  int   executeFrom(uint32_t address);
 
  private:
   void  write32(uint32_t val);

@@ -122,5 +122,28 @@ int Samd10Class::readRegister(uint32_t reg, uint32_t *result)
   return SAMD10_OK;
 }
 
+/***************************************************************************
+ *
+ * Executes code on the Workstation40.
+ * This is implemented in the firmware by checking for the special address
+ * 0xffffffff (which is normally an illegal address) and then jumping to
+ * the specified address.
+ *
+ **************************************************************************/
+int Samd10Class::executeFrom(uint32_t address)
+{
+#if defined(DEBUG)
+  Serial.print(F("Executing code from: "));
+  Serial.print(address, HEX);
+#endif
+  Wire.beginTransmission(SAMD10_ADDRESS);
+  write32(0xffffffff);
+  write32(address);
+  Wire.endTransmission();
+
+  return SAMD10_OK;
+}
+
+// The global instance
 Samd10Class Samd10;
 
