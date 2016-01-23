@@ -29,6 +29,12 @@ enum samd10_results {
   SAMD10_UNALIGNED_ADDRESS,
 };
 
+enum samd10_led_states {
+  LED_ON,
+  LED_OFF,
+  LED_TOGGLE
+};
+
 class Samd10Class
 {
 protected:
@@ -41,6 +47,10 @@ protected:
   int   writeRegister(uint32_t reg, uint32_t data);
   int   readRegister(uint32_t reg, uint32_t *result);
   int   executeFrom(uint32_t address);
+  void  setLed(uint8_t state);
+  boolean pinMode(uint8_t pin, uint8_t mode);
+  boolean digitalWrite(uint8_t pin, boolean value);
+  boolean digitalRead(uint8_t pin);
 
  private:
   void  write32(uint32_t val);

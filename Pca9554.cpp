@@ -29,7 +29,7 @@
 #define PCA9554_REG_POL                 2
 #define PCA9554_REG_CTRL                3
 
-uint8_t pinNum2bitNum[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+static uint8_t pinNum2bitNum[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
 
 /***************************************************************************
  *

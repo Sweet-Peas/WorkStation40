@@ -21,8 +21,18 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "Samd10.h"
+#include "Samd10Defines.h"
 
 #define SAMD10_ADDRESS                  ((uint8_t)0x12)
+
+#define LED_PIN         PIN_PA02
+#define LED_MASK        PORT_PA02
+
+static uint8_t pinMap[] = {PIN_PA14, PIN_PA11, PIN_PA10, PIN_PA07,
+                             PIN_PA06, PIN_PA05, PIN_PA04, PIN_PA03};
+
+static uint32_t maskMap[] = {PORT_PA14, PORT_PA11, PORT_PA10, PORT_PA07,
+                             PORT_PA06, PORT_PA05, PORT_PA04, PORT_PA03};
 
 /***************************************************************************
  *
@@ -142,6 +152,100 @@ int Samd10Class::executeFrom(uint32_t address)
   Wire.endTransmission();
 
   return SAMD10_OK;
+}
+
+/***************************************************************************
+ *
+ * Sets the LED on the workstation board to the wanted state.
+ *
+ **************************************************************************/
+void Samd10Class::setLed(uint8_t state)
+{
+  // First make sure the port pin is set in output mode
+  writeRegister(REG_PORT_DIRSET0, LED_MASK);
+
+  switch(state) {
+    case LED_ON:
+      writeRegister(REG_PORT_OUTCLR0, LED_MASK);
+      break;
+    case LED_OFF:
+      writeRegister(REG_PORT_OUTSET0, LED_MASK);
+      break;
+    case LED_TOGGLE:
+      writeRegister(REG_PORT_OUTTGL0, LED_MASK);
+      break;
+    default:
+      break;
+  }
+}
+
+/***************************************************************************
+ *
+ * Set the wanted pin in the desired mode. This function relies on the
+ * standard Arduino pin modes. So you get functions like pull up etc.
+ *
+ **************************************************************************/
+boolean Samd10Class::pinMode(uint8_t pin, uint8_t mode)
+{
+  // Just make sure the pin is valid
+  if (pin >= 7) {
+    return false;
+  }
+
+  switch(mode) {
+    case INPUT:
+      writeRegister(REG_PORT_DIRCLR0, maskMap[pin]);
+      writeRegister(REG_PORT_OUTCLR0, maskMap[pin]);
+      break;
+    case INPUT_PULLUP:
+      writeRegister(REG_PORT_DIRCLR0, maskMap[pin]);
+      writeRegister(REG_PORT_OUTSET0, maskMap[pin]);
+      break;
+    case OUTPUT:
+      writeRegister(REG_PORT_DIRSET0, maskMap[pin]);
+      break;
+    default:
+      break;
+  }
+  return true;
+}
+
+/***************************************************************************
+ *
+ * Set or clear the wanted digital pin. If the pin is defined as an input
+ * this function will enable/disable the pull up pin of the input pin.
+ *
+ **************************************************************************/
+boolean Samd10Class::digitalWrite(uint8_t pin, boolean value)
+{
+  // Just make sure the pin is valid
+  if (pin >= 7) {
+    return false;
+  }
+
+  if (value) {
+    writeRegister(REG_PORT_OUTSET0, maskMap[pin]);
+  } else {
+    writeRegister(REG_PORT_OUTCLR0, maskMap[pin]);
+  }
+}
+/***************************************************************************
+ *
+ * Read the value of a digital input pin.
+ *
+ **************************************************************************/
+boolean Samd10Class::digitalRead(uint8_t pin)
+{
+  uint32_t inp;
+
+  // Just make sure the pin is valid
+  if (pin >= 7) {
+    return false;
+  }
+
+  readRegister(REG_PORT_IN0, &inp);
+
+  return (inp & maskMap[pin] ? true : false);
 }
 
 // The global instance
